@@ -1131,14 +1131,18 @@ function get_calendar($initial = true, $echo = true) {
 	// Get the next and previous month and year with at least one post
 	$previous = $wpdb->get_row("SELECT MONTH(post_date) AS month, YEAR(post_date) AS year
     FROM $wpdb->posts
+      LEFT JOIN $wpdb->term_relationships ON $wpdb->posts.ID=$wpdb->term_relationships.object_id
 		WHERE post_date < '$thisyear-$thismonth-01'
 		AND post_type = 'post' AND post_status = 'publish'
+    AND ($wpdb->term_relationships.term_taxonomy_id=1 OR $wpdb->term_relationships.term_taxonomy_id IS NULL)
 			ORDER BY post_date DESC
 			LIMIT 1");
 	$next = $wpdb->get_row("SELECT MONTH(post_date) AS month, YEAR(post_date) AS year
 		FROM $wpdb->posts
+      LEFT JOIN $wpdb->term_relationships ON $wpdb->posts.ID=$wpdb->term_relationships.object_id
 		WHERE post_date > '$thisyear-$thismonth-{$last_day} 23:59:59'
 		AND post_type = 'post' AND post_status = 'publish'
+    AND ($wpdb->term_relationships.term_taxonomy_id=1 OR $wpdb->term_relationships.term_taxonomy_id IS NULL)
 			ORDER BY post_date ASC
 			LIMIT 1");
 
@@ -1192,8 +1196,10 @@ function get_calendar($initial = true, $echo = true) {
 	// Get days with posts
 	$dayswithposts = $wpdb->get_results("SELECT DISTINCT DAYOFMONTH(post_date)
     FROM $wpdb->posts 
+      LEFT JOIN $wpdb->term_relationships ON $wpdb->posts.ID=$wpdb->term_relationships.object_id
     WHERE post_date >= '{$thisyear}-{$thismonth}-01 00:00:00'
 		AND post_type = 'post' AND post_status = 'publish'
+    AND ($wpdb->term_relationships.term_taxonomy_id=1 OR $wpdb->term_relationships.term_taxonomy_id IS NULL)
 		AND post_date <= '{$thisyear}-{$thismonth}-{$last_day} 23:59:59'", ARRAY_N);
 	if ( $dayswithposts ) {
 		foreach ( (array) $dayswithposts as $daywith ) {
@@ -1211,9 +1217,11 @@ function get_calendar($initial = true, $echo = true) {
 	$ak_titles_for_day = array();
 	$ak_post_titles = $wpdb->get_results("SELECT ID, post_title, DAYOFMONTH(post_date) as dom "
 		."FROM $wpdb->posts "
+    ."  LEFT JOIN $wpdb->term_relationships ON $wpdb->posts.ID=$wpdb->term_relationships.object_id"
 		."WHERE post_date >= '{$thisyear}-{$thismonth}-01 00:00:00' "
 		."AND post_date <= '{$thisyear}-{$thismonth}-{$last_day} 23:59:59' "
 		."AND post_type = 'post' AND post_status = 'publish'"
+    ."AND ($wpdb->term_relationships.term_taxonomy_id=1 OR $wpdb->term_relationships.term_taxonomy_id IS NULL)"
 	);
 	if ( $ak_post_titles ) {
 		foreach ( (array) $ak_post_titles as $ak_post_title ) {
